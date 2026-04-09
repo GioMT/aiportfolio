@@ -1,4 +1,18 @@
 exports.handler = async (event) => {
+  // ✅ ADDED: Handle CORS Preflight requests
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*', // Update this to your specific domain in production
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+      body: '',
+    };
+  }
+
+  // Reject anything that isn't POST or OPTIONS
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -20,7 +34,7 @@ exports.handler = async (event) => {
       generationConfig: { maxOutputTokens: 1500, temperature: 0.9 },
     };
 
-    const model = 'gemini-3.1-pro-preview';
+    const model = 'gemini-3.1-pro-preview'; 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
 
     const response = await fetch(url, {
