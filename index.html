@@ -492,11 +492,11 @@ async function aiCallGemini(system, prompt, contentEl, outputEl) {
   outputEl.style.display = 'block';
   contentEl.textContent = '';
 
-  const res = await fetch('/api/gemini', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ system, prompt })
-  });
+  const res = await fetch('/.netlify/functions/gemini', {
+ 	 method: 'POST',
+ 	 headers: { 'Content-Type': 'application/json' },
+ 	 body: JSON.stringify({ system, prompt })
+	});
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -574,11 +574,11 @@ async function aiGenerateImage() {
   out.innerHTML = '<div class="ai-img-status"><span class="ai-spinner"></span> Generating with FLUX.1-schnell...</div>';
   aiSetLoading('aiBtnImg', true, 'Generate Image');
   try {
-    const res = await fetch('/api/image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: full })
-    });
+    const res = await fetch('/.netlify/functions/image', {
+ 	 method: 'POST',
+	  headers: { 'Content-Type': 'application/json' },
+ 	 body: JSON.stringify({ inputs: full })
+	});
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Image generation failed');
     const imgSrc = 'data:' + data.contentType + ';base64,' + data.image;
