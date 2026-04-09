@@ -36,7 +36,8 @@ exports.handler = async (event) => {
       generationConfig: { maxOutputTokens: 1500, temperature: 0.9 },
     };
 
-    const model = 'gemini-3.1-pro-preview'; 
+    // ✅ Switched to Gemini 2.5 Pro
+    const model = 'gemini-2.5-pro'; 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
 
     const response = await fetch(url, {
