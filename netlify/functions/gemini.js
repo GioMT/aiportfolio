@@ -1,10 +1,10 @@
 exports.handler = async (event) => {
-  // ✅ ADDED: Handle CORS Preflight requests
+  // 1. Handle CORS Preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*', // Update this to your specific domain in production
+        'Access-Control-Allow-Origin': '*', 
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
@@ -12,21 +12,23 @@ exports.handler = async (event) => {
     };
   }
 
-  // Reject anything that isn't POST or OPTIONS
+  // 2. Reject anything that isn't POST, but return JSON so the UI can read it
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { 
+      statusCode: 405, 
+      body: JSON.stringify({ error: `Method ${event.httpMethod} Not Allowed` }) 
+    };
   }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Server misconfigured: GEMINI_API_KEY not set' }),
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: 'Server misconfigured: GEMINI_API_KEY not set' }) };
   }
 
   try {
-    const { system, prompt } = JSON.parse(event.body);
+    // 3. Safely parse the body (Netlify sometimes Base64 encodes POST payloads)
+    const bodyText = event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString('utf8') : event.body;
+    const { system, prompt } = JSON.parse(bodyText);
 
     const payload = {
       system_instruction: system ? { parts: [{ text: system }] } : undefined,
@@ -49,7 +51,6 @@ exports.handler = async (event) => {
       return { statusCode: response.status, body: JSON.stringify({ error: msg }) };
     }
 
-    // Pass the SSE stream straight through to the browser
     const body = await response.text();
 
     return {
@@ -62,9 +63,6 @@ exports.handler = async (event) => {
       body,
     };
   } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
