@@ -15,7 +15,8 @@ exports.handler = async (event) => {
     const { inputs } = JSON.parse(event.body);
 
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+      // ✅ Updated to the new Hugging Face inference router
+      'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell',
       {
         method: 'POST',
         headers: {
