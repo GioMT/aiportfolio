@@ -14,20 +14,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PORTFOLIO - GIO</title>
 
+  <!-- Error Logger for Remote Debugging -->
+  <script>
+    window.addEventListener('error', function(e) {
+      const errDiv = document.createElement('div');
+      errDiv.style.position = 'fixed';
+      errDiv.style.top = '10px';
+      errDiv.style.right = '10px';
+      errDiv.style.background = 'rgba(255, 0, 0, 0.9)';
+      errDiv.style.color = '#fff';
+      errDiv.style.padding = '15px';
+      errDiv.style.borderRadius = '8px';
+      errDiv.style.zIndex = '99999';
+      errDiv.style.fontSize = '12px';
+      errDiv.style.fontFamily = 'monospace';
+      errDiv.style.maxWidth = '300px';
+      errDiv.innerText = "JS Error: " + e.message + '\n' + e.filename + ':' + e.lineno;
+      document.body.appendChild(errDiv);
+    });
+  </script>
+
   <!-- CSS Styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%23ff6a00%22>✦</text></svg>">
 </head>
 
 <body>
+  <canvas id="bg-canvas"></canvas>
 
-  <div id="ai-status-notice" class="ai-notice-banner">
-    <div class="ai-notice-content">
-      <strong>✦ Notice:</strong> The Text and Code AI models are temporarily unavailable due to API tier limitations.
-      They will be back online soon. (Image generation is still active!)
-    </div>
-    <button class="ai-notice-close" onclick="closeAiNotice()">&times;</button>
-  </div>
 
+
+  <div id="app-container">
   <nav id="navbar">
     <a href="#intro" class="logo">
       <img src="assets/icons/polka.gif" alt="Logo"
@@ -38,12 +55,51 @@
         style="height:55px; object-fit:contain; vertical-align:middle; margin-top:1px;">
     </a>
     <ul class="nav-links" id="navLinks">
-      <li><a href="#intro">✦ Home</a></li>
-      <li><a href="#skills">✦ Skills</a></li>
-      <li><a href="#projects">✦ Projects</a></li>
-      <li><a href="#certifications">✦ Certifications</a></li>
-      <li><a href="#ai-studio" style="color:var(--orange);font-weight:600;">✦ AI Studio</a></li>
-      <li><a href="#contact">✦ Contact</a></li>
+      <li>
+        <a href="#intro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </a>
+      </li>
+      <li>
+        <a href="#skills">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>Skills</span>
+        </a>
+      </li>
+      <li>
+        <a href="#projects">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          <span>Projects</span>
+        </a>
+      </li>
+      <li>
+        <a href="#certifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          <span>Certifications</span>
+        </a>
+      </li>
+      <li>
+        <a href="#contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <span>Contact</span>
+        </a>
+      </li>
     </ul>
     <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
       <span></span><span></span><span></span>
@@ -51,8 +107,6 @@
   </nav>
 
   <section id="intro">
-    <div class="intro-bg"></div>
-    <div class="particles" id="particles"></div>
     <div class="intro-content reveal">
       <h1>Hi, I'm <span class="highlight">Giordano Tubeo</span></h1>
       <p>A data enthusiast who enjoys crafting dashboards and simplifying tasks</p>
@@ -155,10 +209,10 @@
           </video>
         </div>
         <div class="project-body">
-          <h3>Resort Booking Saas</h3>
+          <h3>Sanctropic Resort Management System</h3>
           <p>A scalable multi-tenant booking ecosystem featuring real-time reservations, integrated payment processing,
             and a robust administrative dashboard for comprehensive resort management.</p>
-          <div class="tags"><span class="tag">JavaScript</span><span class="tag">Saas</span><span class="tag">API
+          <div class="tags"><span class="tag">JavaScript</span><span class="tag">System</span><span class="tag">API
               Integration</span></div>
         </div>
       </div>
@@ -173,7 +227,12 @@
     </div>
     <div class="cert-timeline">
       <div class="cert-item reveal">
-        <div class="cert-dot">🏅</div>
+        <div class="cert-dot">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cert-svg">
+            <circle cx="12" cy="8" r="6"></circle>
+            <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
+          </svg>
+        </div>
         <div class="cert-content"
           style="background:linear-gradient(rgba(20,20,20,.85),rgba(20,20,20,.85)),url('assets/images/DSPA.jpg') center/cover no-repeat; aspect-ratio:2.5/1.75;">
           <h3>Data Science Preparatory Academy</h3>
@@ -183,7 +242,12 @@
       </div>
 
       <div class="cert-item reveal">
-        <div class="cert-dot">🏅</div>
+        <div class="cert-dot">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cert-svg">
+            <circle cx="12" cy="8" r="6"></circle>
+            <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
+          </svg>
+        </div>
         <div class="cert-content"
           style="background:linear-gradient(rgba(20,20,20,.85),rgba(20,20,20,.85)),url('assets/images/TSF.jpg') center/cover no-repeat; aspect-ratio:2.5/1.75;">
           <h3>Technical Support Fundamental</h3>
@@ -194,142 +258,7 @@
     </div>
   </section>
 
-  <section id="ai-studio">
-    <div class="reveal">
-      <div class="ai-studio-header">
-        <div>
-          <h2 class="section-title">AI Studio</h2>
-          <p class="section-subtitle" style="margin-bottom:0">Generate text, images & code — powered by open-source AI
-            models.</p>
-        </div>
-        <div class="ai-badge">✦ Open-Source Models</div>
-      </div>
-    </div>
 
-    <div class="ai-tab-nav">
-      <button class="ai-tab-btn active" onclick="aiSwitchTab('text',this)">✍️ <span>Text</span></button>
-      <button class="ai-tab-btn" onclick="aiSwitchTab('image',this)">🖼️ <span>Image</span></button>
-      <button class="ai-tab-btn" onclick="aiSwitchTab('code',this)">⌨️ <span>Code</span></button>
-      <button class="ai-tab-btn" onclick="aiSwitchTab('about',this)">ℹ️ <span>About</span></button>
-    </div>
-
-    <div class="ai-panel active" id="ai-panel-text">
-      <div class="ai-card">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
-          <h3>Text Generation</h3>
-          <div class="ai-model-pill">gemini-2.5-pro · Google</div>
-        </div>
-        <p class="ai-sub">Generate essays, stories, summaries, and more.</p>
-        <textarea class="ai-textarea" id="aiTextPrompt"
-          placeholder="Write a short story about a lone astronaut who discovers a garden growing on Mars..."></textarea>
-        <div class="ai-controls">
-          <select class="ai-select" id="aiTextMode">
-            <option value="creative">✨ Creative Writing</option>
-            <option value="essay">📝 Essay / Analysis</option>
-            <option value="summary">📋 Summarize</option>
-            <option value="qa">💬 Q&A / Explain</option>
-            <option value="email">📧 Email / Letter</option>
-          </select>
-          <select class="ai-select" id="aiTextTone">
-            <option value="balanced">Balanced tone</option>
-            <option value="formal">Formal</option>
-            <option value="casual">Casual & friendly</option>
-            <option value="poetic">Poetic</option>
-            <option value="technical">Technical</option>
-          </select>
-          <button class="ai-btn-gen" id="aiBtnText"
-            onclick="aiGenerateText()"><span>Generate</span><span>→</span></button>
-        </div>
-        <div class="ai-output" id="aiTextOut">
-          <button class="ai-copy-btn" onclick="aiCopy('aiTextContent')">Copy</button>
-          <div id="aiTextContent"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ai-panel" id="ai-panel-image">
-      <div class="ai-card">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
-          <h3>Image Generation</h3>
-          <div class="ai-model-pill">FLUX.1-schnell · Black Forest Labs</div>
-        </div>
-        <p class="ai-sub">Open-source image generation via Hugging Face — free to use.</p>
-        <textarea class="ai-textarea" id="aiImgPrompt"
-          placeholder="A serene Japanese temple at dawn, cherry blossoms falling, golden light streaming through mist..."
-          style="min-height:88px;"></textarea>
-        <div class="ai-section-lbl" style="margin-top:16px;">Style preset</div>
-        <div class="ai-style-grid">
-          <div class="ai-style-chip selected" onclick="aiSelectStyle(this,'')">None</div>
-          <div class="ai-style-chip" onclick="aiSelectStyle(this,'photorealistic, 8k')">Photo</div>
-          <div class="ai-style-chip" onclick="aiSelectStyle(this,'digital art, vivid colors')">Digital Art</div>
-          <div class="ai-style-chip" onclick="aiSelectStyle(this,'oil painting, artistic')">Painting</div>
-          <div class="ai-style-chip" onclick="aiSelectStyle(this,'anime style, manga')">Anime</div>
-          <div class="ai-style-chip" onclick="aiSelectStyle(this,'cinematic, film still')">Cinematic</div>
-          <div class="ai-style-chip" onclick="aiSelectStyle(this,'3d render, octane')">3D Render</div>
-          <div class="ai-style-chip" onclick="aiSelectStyle(this,'watercolor, soft')">Watercolor</div>
-        </div>
-        <div class="ai-controls" style="margin-top:16px;">
-          <button class="ai-btn-gen" id="aiBtnImg" onclick="aiGenerateImage()"><span>Generate
-              Image</span><span>→</span></button>
-        </div>
-        <div class="ai-img-out" id="aiImgOut">
-          <div class="ai-img-status">Your image will appear here</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ai-panel" id="ai-panel-code">
-      <div class="ai-card">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
-          <h3>Code Generation</h3>
-          <div class="ai-model-pill">gemini-2.5-pro · Google</div>
-        </div>
-        <p class="ai-sub">Generate, explain, debug, and refactor code in any language.</p>
-        <textarea class="ai-textarea" id="aiCodePrompt"
-          placeholder="Write a Python function that returns the top 3 most frequent elements in a list..."></textarea>
-        <div class="ai-controls">
-          <select class="ai-select" id="aiCodeLang">
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript</option>
-            <option value="typescript">TypeScript</option>
-            <option value="sql">SQL</option>
-            <option value="bash">Bash / Shell</option>
-            <option value="any">Auto-detect</option>
-          </select>
-          <select class="ai-select" id="aiCodeMode">
-            <option value="generate">Generate code</option>
-            <option value="explain">Explain code</option>
-            <option value="debug">Debug & fix</option>
-            <option value="refactor">Refactor / optimize</option>
-            <option value="test">Write tests</option>
-          </select>
-          <button class="ai-btn-gen" id="aiBtnCode"
-            onclick="aiGenerateCode()"><span>Generate</span><span>→</span></button>
-        </div>
-        <div class="ai-output code-out" id="aiCodeOut">
-          <button class="ai-copy-btn" onclick="aiCopy('aiCodeContent')">Copy</button>
-          <div id="aiCodeContent"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ai-panel" id="ai-panel-about">
-      <div class="ai-card">
-        <h3>About AI Studio</h3>
-        <p class="ai-sub">Multi-modal AI generation embedded in this portfolio — powered by open-source models.</p>
-        <div class="ai-about-grid">
-          <div class="ai-about-card"><strong>gemini-2.5-pro</strong><span>Google · Text & Code<br>Latest reasoning
-              model</span></div>
-          <div class="ai-about-card"><strong>FLUX.1-schnell</strong><span>Black Forest Labs · Images<br>Open-source,
-              fast generation</span></div>
-        </div>
-        <div class="ai-divider"></div>
-        <p style="font-size:.85rem;color:#666;line-height:1.8;">All AI requests are routed through a secure server-side
-          proxy. No API keys are exposed to visitors — they live exclusively as environment variables on the hosting
-          server.</p>
-      </div>
-    </div>
-  </section>
 
   <section id="contact">
     <div class="reveal">
@@ -400,19 +329,58 @@
         <input type="email" id="cEmail" placeholder="Your Email" />
         <input type="text" id="cSubject" placeholder="Subject" />
         <textarea id="cMessage" placeholder="Your Message"></textarea>
-        <button class="btn btn-primary" onclick="sendMail()">Send Message ✉️</button>
+        <button class="btn btn-primary" onclick="sendMail()">
+          Send Message
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="send-svg">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
       </div>
     </div>
   </section>
 
   <footer>
-    <p>© 2026 Portfolio. Crafted with <span class="heart">♥</span> and a very lots of ☕</p>
+    <p>© 2026 Portfolio. Crafted with 
+      <svg viewBox="0 0 24 24" class="heart-svg">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+      </svg> 
+      and a very lots of 
+      <svg viewBox="0 0 24 24" class="coffee-svg">
+        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+        <line x1="6" y1="1" x2="6" y2="4"></line>
+        <line x1="10" y1="1" x2="10" y2="4"></line>
+        <line x1="14" y1="1" x2="14" y2="4"></line>
+      </svg>
+    </p>
   </footer>
   <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0})">↑</button>
 
+  </div>
+
+  <!-- Gravitational Displacement Filter -->
+  <svg style="display: none;">
+    <defs>
+      <filter id="gravitational-lens">
+        <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" id="lens-displacement" />
+      </filter>
+    </defs>
+  </svg>
+
+
+
+  <!-- Preview Modal Lightbox -->
+  <div id="preview-modal" class="modal">
+    <button class="modal-close" onclick="closePreviewModal()">&times;</button>
+    <div class="modal-content" id="modal-content"></div>
+  </div>
+
   <!-- JavaScript Scripts -->
-  <script src="js/script.js"></script>
-  <script src="js/ai-studio.js"></script>
+  <script src="js/themes/space-theme.js?v=4"></script>
+  <script src="js/script.js?v=4"></script>
+
 
 </body>
 
