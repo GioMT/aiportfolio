@@ -7,9 +7,21 @@
     let w = canvas.width = window.innerWidth;
     let h = canvas.height = window.innerHeight;
     
+    let bgGradient;
+    function fillOpaqueBackground() {
+        bgGradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.sqrt(w * w + h * h) / 2);
+        bgGradient.addColorStop(0, '#08080c');
+        bgGradient.addColorStop(1, '#010102');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+    }
+    
+    fillOpaqueBackground();
+    
     window.addEventListener('resize', () => {
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
+        fillOpaqueBackground();
     });
     
     // Instantiate background theme
@@ -49,8 +61,8 @@
         mouseX += (targetMouseX - mouseX) * 0.05;
         mouseY += (targetMouseY - mouseY) * 0.05;
         
-        // Clear background with appropriate tint
-        ctx.fillStyle = 'rgba(8, 8, 12, 0.22)';
+        // Clear background completely on every frame with the opaque radial gradient to avoid any trails
+        ctx.fillStyle = bgGradient || '#08080c';
         ctx.fillRect(0, 0, w, h);
         
         const depthChange = 1.0 + scrollSpeed;

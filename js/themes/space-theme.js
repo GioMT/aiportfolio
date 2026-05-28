@@ -9,15 +9,16 @@ class SpaceTheme {
     }
 
     init(w, h) {
+        this.starMaxDepth = 600; // shorten max depth of stars
         // --- Stars Setup ---
-        const starCount = 120;
+        const starCount = 688;
         this.stars = [];
         for (let i = 0; i < starCount; i++) {
             this.stars.push({
                 x: (Math.random() - 0.5) * w * 3,
                 y: (Math.random() - 0.5) * h * 3,
-                z: Math.random() * this.maxDepth,
-                size: Math.random() * 1.5 + 0.5,
+                z: Math.random() * this.starMaxDepth,
+                size: Math.random() * 1.5 + 0.9,
                 color: Math.random() > 0.45 ? '#ff6a00' : '#00f3ff'
             });
         }
@@ -133,15 +134,15 @@ class SpaceTheme {
     }
 
     spawnComet(w, h) {
-        if (this.comets.length >= 2) return;
+        if (this.comets.length >= 4) return;
         this.comets.push({
             x: (Math.random() * w * 2) - w,
             y: -h * 1.5,
             z: Math.random() * 400 + 400,
-            vx: (Math.random() - 0.3) * 14 + 8,
-            vy: (Math.random() * 8) + 12,
-            vz: -Math.random() * 6 - 4,
-            baseRadius: Math.random() * 2 + 1,
+            vx: (Math.random() - 0.3) * 8 + 4,
+            vy: (Math.random() * 5) + 6,
+            vz: -Math.random() * 3 - 2,
+            baseRadius: Math.random() * 3 + 5,
             trailPoints: []
         });
     }
@@ -170,7 +171,10 @@ class SpaceTheme {
     }
 
     update(depthChange, mouseX, mouseY, w, h) {
-        if (Math.random() < 0.003) {
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+        
+        if (Math.random() < 0.015) {
             this.spawnComet(w, h);
         }
 
@@ -194,15 +198,19 @@ class SpaceTheme {
             p.x += mouseX * 0.015;
             p.y += mouseY * 0.015;
 
+            let reset = false;
             if (p.z <= 0) {
-                p.z = this.maxDepth;
+                p.z = this.starMaxDepth;
                 p.x = (Math.random() - 0.5) * w * 3;
                 p.y = (Math.random() - 0.5) * h * 3;
-            } else if (p.z > this.maxDepth) {
+                reset = true;
+            } else if (p.z > this.starMaxDepth) {
                 p.z = 10;
                 p.x = (Math.random() - 0.5) * w * 3;
                 p.y = (Math.random() - 0.5) * h * 3;
+                reset = true;
             }
+            if (reset) p.history = [];
         });
 
         // 3. Update Planets and Black Hole
@@ -213,16 +221,38 @@ class SpaceTheme {
             p.y += mouseY * 0.01;
 
             const limit = p.type === 'blackhole' ? 3000 : this.maxDepth;
+            let resetOccurred = false;
             if (p.z <= 0) {
                 this.resetPosition(p, w, h);
+                resetOccurred = true;
             } else if (p.z > limit) {
                 this.resetPositionBack(p, w, h);
+                resetOccurred = true;
             }
 
             if (p.moons) {
-                p.moons.forEach(m => { m.angle += m.speed; });
+                p.moons.forEach(m => {
+                    m.angle += m.speed;
+                    if (resetOccurred) m.history = [];
+                });
             }
         });
+
+        // 4. Update Comets
+        this.comets.forEach(c => {
+            c.x += c.vx;
+            c.y += c.vy;
+            c.z += c.vz - depthChange;
+
+            const factor = 250 / c.z;
+            const cx = c.x * factor + w / 2;
+            const cy = c.y * factor + h / 2;
+            
+            if (!c.trailPoints) c.trailPoints = [];
+            c.trailPoints.push({ x: cx, y: cy, factor: factor });
+            if (c.trailPoints.length > 8) c.trailPoints.shift();
+        });
+        this.comets = this.comets.filter(c => c.z > 30 && c.z < 2000 && c.y < h * 2 && c.x > -w * 2 && c.x < w * 2);
     }
 
     draw(ctx, w, h, themeTransitionAlpha, scrollSpeed) {
@@ -276,28 +306,35 @@ class SpaceTheme {
             const factor = 250 / p.z;
             const px = p.x * factor + w / 2;
             const py = p.y * factor + h / 2;
-            const alpha = Math.min(1, (1 - p.z / this.maxDepth) * 1.5);
+            const alpha = Math.min(1, (1 - p.z / this.starMaxDepth) * 1.5);
 
-            ctx.beginPath();
-            if (Math.abs(scrollSpeed) > 1.2) {
-                // Motion blur tail
-                const prevZ = p.z + (1.0 + scrollSpeed);
-                const prevFactor = 250 / prevZ;
-                const pprevX = p.x * prevFactor + w / 2;
-                const pprevY = p.y * prevFactor + h / 2;
+            // Update star history
+            if (!p.history) p.history = [];
+            p.history.push({ x: px, y: py, factor: factor });
+            if (p.history.length > 5) p.history.shift();
 
-                ctx.strokeStyle = p.color;
-                ctx.globalAlpha = themeTransitionAlpha * alpha;
-                ctx.lineWidth = p.size * (1 - p.z / this.maxDepth) * 3.5;
-                ctx.moveTo(pprevX, pprevY);
-                ctx.lineTo(px, py);
-                ctx.stroke();
-            } else {
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = themeTransitionAlpha * alpha;
-                ctx.arc(px, py, p.size * factor * 0.45, 0, Math.PI * 2);
-                ctx.fill();
+            // Draw star tail (same style as moon)
+            if (p.history.length > 1) {
+                for (let idx = 0; idx < p.history.length - 1; idx++) {
+                    const pt1 = p.history[idx];
+                    const pt2 = p.history[idx + 1];
+                    const trailAlpha = (idx / p.history.length) * alpha * 0.75;
+                    ctx.beginPath();
+                    ctx.strokeStyle = p.color;
+                    ctx.globalAlpha = themeTransitionAlpha * trailAlpha;
+                    ctx.lineWidth = p.size * pt1.factor * 0.5;
+                    ctx.moveTo(pt1.x, pt1.y);
+                    ctx.lineTo(pt2.x, pt2.y);
+                    ctx.stroke();
+                }
             }
+
+            // Draw star head
+            ctx.beginPath();
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = themeTransitionAlpha * alpha;
+            ctx.arc(px, py, p.size * factor * 0.5, 0, Math.PI * 2);
+            ctx.fill();
         });
 
         // 3. Draw Planets and Black Hole
@@ -311,19 +348,51 @@ class SpaceTheme {
                 const limit = p.type === 'blackhole' ? 3000 : this.maxDepth;
                 const alpha = Math.min(1, (1 - p.z / limit) * 2.0);
 
+                // Update moon history once per frame
+                if (p.moons) {
+                    p.moons.forEach(m => {
+                        const sin = Math.sin(m.angle);
+                        const cos = Math.cos(m.angle);
+                        const mx = px + cos * r * m.orbitDist;
+                        const my = py + sin * r * m.orbitDist * 0.3;
+                        
+                        if (!m.history) m.history = [];
+                        m.history.push({ x: mx, y: my, factor: factor });
+                        if (m.history.length > 8) m.history.shift();
+                    });
+                }
+
+                // Moon trails (drawn behind the planet core)
+                if (p.moons) {
+                    p.moons.forEach(m => {
+                        if (m.history && m.history.length > 1) {
+                            for (let idx = 0; idx < m.history.length - 1; idx++) {
+                                const pt1 = m.history[idx];
+                                const pt2 = m.history[idx + 1];
+                                const trailAlpha = (idx / m.history.length) * alpha * 0.75;
+                                ctx.beginPath();
+                                ctx.strokeStyle = m.color;
+                                ctx.globalAlpha = themeTransitionAlpha * trailAlpha;
+                                ctx.lineWidth = m.size * pt1.factor * 1.3;
+                                ctx.moveTo(pt1.x, pt1.y);
+                                ctx.lineTo(pt2.x, pt2.y);
+                                ctx.stroke();
+                            }
+                        }
+                    });
+                }
+
                 // Moons behind planet
                 if (p.moons) {
                     p.moons.forEach(m => {
                         const sin = Math.sin(m.angle);
-                        if (sin < 0) {
-                            const cos = Math.cos(m.angle);
-                            const mx = px + cos * r * m.orbitDist;
-                            const my = py + sin * r * m.orbitDist * 0.3;
+                        if (sin < 0 && m.history && m.history.length > 0) {
+                            const currentPos = m.history[m.history.length - 1];
                             const mRad = m.size * factor * 0.6;
                             ctx.beginPath();
                             ctx.fillStyle = m.color;
                             ctx.globalAlpha = themeTransitionAlpha * alpha;
-                            ctx.arc(mx, my, mRad, 0, Math.PI * 2);
+                            ctx.arc(currentPos.x, currentPos.y, mRad, 0, Math.PI * 2);
                             ctx.fill();
                         }
                     });
@@ -495,19 +564,57 @@ class SpaceTheme {
                 if (p.moons) {
                     p.moons.forEach(m => {
                         const sin = Math.sin(m.angle);
-                        if (sin >= 0) {
-                            const cos = Math.cos(m.angle);
-                            const mx = px + cos * r * m.orbitDist;
-                            const my = py + sin * r * m.orbitDist * 0.3;
+                        if (sin >= 0 && m.history && m.history.length > 0) {
+                            const currentPos = m.history[m.history.length - 1];
                             const mRad = m.size * factor * 0.6;
                             ctx.beginPath();
                             ctx.fillStyle = m.color;
                             ctx.globalAlpha = themeTransitionAlpha * alpha;
-                            ctx.arc(mx, my, mRad, 0, Math.PI * 2);
+                            ctx.arc(currentPos.x, currentPos.y, mRad, 0, Math.PI * 2);
                             ctx.fill();
                         }
                     });
                 }
+            }
+        });
+
+        // 4. Draw Comets
+        this.comets.forEach(c => {
+            const factor = 250 / c.z;
+            const cx = c.x * factor + w / 2;
+            const cy = c.y * factor + h / 2;
+            const r = c.baseRadius * factor;
+
+            if (cx > -100 && cx < w + 100 && cy > -100 && cy < h + 100) {
+                const alpha = Math.min(1, (1 - c.z / this.maxDepth) * 2.0);
+
+                // Draw comet trail (tail)
+                if (c.trailPoints && c.trailPoints.length > 1) {
+                    for (let idx = 0; idx < c.trailPoints.length - 1; idx++) {
+                        const pt1 = c.trailPoints[idx];
+                        const pt2 = c.trailPoints[idx + 1];
+                        const trailAlpha = (idx / c.trailPoints.length) * alpha * 0.75;
+                        
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#ffe8b5';
+                        ctx.globalAlpha = themeTransitionAlpha * trailAlpha;
+                        ctx.lineWidth = c.baseRadius * pt1.factor * 1.3;
+                        ctx.moveTo(pt1.x, pt1.y);
+                        ctx.lineTo(pt2.x, pt2.y);
+                        ctx.stroke();
+                    }
+                }
+
+                // Draw comet head
+                ctx.beginPath();
+                const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.3, '#ffe8b5');
+                grad.addColorStop(1, 'rgba(255, 200, 140, 0)');
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = themeTransitionAlpha * alpha;
+                ctx.arc(cx, cy, r * 1.5, 0, Math.PI * 2);
+                ctx.fill();
             }
         });
 
